@@ -1,0 +1,596 @@
+/* ==========================================================================
+   DESIGN LACC - Versão Final Unificada
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   VARIÁVEIS DE DESIGN E ESTILOS GLOBAIS
+   -------------------------------------------------------------------------- */
+:root {
+    --cor-primaria: #1a5f9e; 
+    --cor-secundaria: #3a86c8;
+    --cor-fundo-claro: #f4f7f6;
+    --cor-fundo-main: #ffffff;
+    --cor-texto: #333333;
+    --cor-texto-claro: #6c757d;
+    --cor-borda: #dee2e6;
+    --sombra-padrao: 0 4px 12px rgba(0, 0, 0, 0.08);
+    --sombra-hover: 0 6px 16px rgba(0, 0, 0, 0.12);
+    --fonte-titulo: 'Roboto Slab', serif;
+    --fonte-corpo: 'Lato', sans-serif;
+}
+
+*, *::before, *::after { 
+    box-sizing: border-box; 
+}
+
+html { 
+    scroll-behavior: smooth; 
+}
+
+body { 
+    margin: 0; 
+    padding: 0; 
+    font-family: var(--fonte-corpo); 
+    color: var(--cor-texto); 
+    background-color: var(--cor-fundo-claro); 
+    line-height: 1.6; 
+    display: flex; 
+    flex-direction: column; 
+    min-height: 100vh; 
+}
+
+h1, h2, h3, h4, h5, h6 { 
+    font-family: var(--fonte-titulo); 
+    color: var(--cor-primaria); 
+    font-weight: 700; 
+}
+
+a { 
+    color: var(--cor-secundaria); 
+    text-decoration: none; 
+    transition: color 0.3s ease; 
+}
+
+a:hover { 
+    color: var(--cor-primaria); 
+}
+
+img { 
+    max-width: 100%; 
+    height: auto; 
+    display: block; 
+}
+
+/* --------------------------------------------------------------------------
+   HEADER E FOOTER
+   -------------------------------------------------------------------------- */
+header { 
+    background-color: var(--cor-fundo-main); 
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05); 
+    position: sticky; 
+    top: 0; 
+    z-index: 1000; 
+}
+
+.box1 { 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
+    padding: 10px 40px; 
+    border-bottom: 1px solid var(--cor-borda); 
+}
+
+.logo { 
+    height: 50px; 
+    width: auto; 
+}
+
+.tudobotao { 
+    display: flex; 
+    gap: 10px; 
+}
+
+.box2 { 
+    background-color: var(--cor-fundo-main); 
+    padding: 5px; 
+    display: flex; 
+    justify-content: center; 
+}
+
+.menu { 
+    list-style: none; 
+    display: flex; 
+    gap: 20px; 
+    padding: 0; 
+    margin: 0; 
+}
+
+.menu li a { 
+    display: block; 
+    text-align: center; 
+    color: var(--cor-texto); 
+    padding: 10px 15px; 
+    border-radius: 8px; 
+    font-weight: 700; 
+    position: relative; 
+    transition: background-color 0.3s ease; 
+}
+
+.menu li a::after { 
+    content: ''; 
+    position: absolute; 
+    bottom: 0; 
+    left: 50%; 
+    transform: translateX(-50%); 
+    width: 0; 
+    height: 3px; 
+    background-color: var(--cor-primaria); 
+    transition: width 0.3s ease; 
+}
+
+.menu li a:hover::after { 
+    width: 100%; 
+}
+
+footer, .box4 { 
+    background-color: #343a40; 
+    color: #f8f9fa; 
+    padding: 20px 40px; 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
+    font-size: 0.9rem; 
+}
+
+.logo2 { 
+    height: 40px; 
+    width: auto; 
+    filter: brightness(0) invert(1); 
+}
+
+/* --------------------------------------------------------------------------
+   LAYOUTS E BOTÕES GERAIS
+   -------------------------------------------------------------------------- */
+main { 
+    flex: 1; 
+    width: 90%; 
+    max-width: 1200px; 
+    margin: 30px auto; 
+    padding: 40px; 
+    background-color: var(--cor-fundo-main); 
+    border-radius: 12px; 
+    box-shadow: var(--sombra-padrao); 
+}
+
+.btn, .botaologin, .saiba-mais, button { 
+    display: inline-block; 
+    font-family: var(--fonte-corpo); 
+    font-weight: 700; 
+    font-size: 0.9rem; 
+    color: #fff; 
+    background-color: var(--cor-secundaria); 
+    padding: 10px 20px; 
+    border-radius: 8px; 
+    border: none; 
+    cursor: pointer; 
+    text-align: center; 
+    transition: all 0.3s ease; 
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1); 
+    text-decoration: none; 
+}
+
+.btn:hover, .botaologin:hover, .saiba-mais:hover, button:hover { 
+    background-color: var(--cor-primaria); 
+    transform: translateY(-2px); 
+    box-shadow: var(--sombra-hover); 
+}
+
+/* --------------------------------------------------------------------------
+   ESTILOS PARA PÁGINAS INTERNAS (POSTS, LOGIN, FORMULÁRIOS)
+   -------------------------------------------------------------------------- */
+.post { 
+    background: #fff; 
+    border: 1px solid var(--cor-borda); 
+    padding: 25px; 
+    margin-bottom: 25px; 
+    border-radius: 12px; 
+    box-shadow: var(--sombra-padrao); 
+}
+
+.post h2 { 
+    margin-top: 0; 
+    margin-bottom: 5px; 
+}
+
+.post small { 
+    color: var(--cor-texto-claro); 
+    font-size: 0.85rem; 
+    display: block; 
+    margin-bottom: 15px; 
+}
+
+form { 
+    max-width: 600px; 
+    margin: 20px auto; 
+    background-color: #fff; 
+    padding: 30px; 
+    border-radius: 12px; 
+    box-shadow: var(--sombra-padrao); 
+}
+
+form label { 
+    font-weight: 700; 
+    margin-bottom: 8px; 
+    color: var(--cor-primaria); 
+    display: block; 
+}
+
+form input[type=text], form input[type=email], form input[type=password] { 
+    width: 100%; 
+    padding: 12px; 
+    margin-bottom: 20px; 
+    border-radius: 8px; 
+    border: 1px solid var(--cor-borda); 
+}
+
+/* ==========================================================================
+   NOVO DESIGN: PÁGINA MINHA CONTA (/sucesso.php)
+   ========================================================================== */
+
+.user-info {
+    padding: 30px;
+    background-color: var(--cor-fundo-claro);
+    border-radius: 12px;
+    margin-bottom: 40px;
+    border: 1px solid var(--cor-borda);
+}
+
+.user-info h1 {
+    margin-top: 0;
+    margin-bottom: 20px;
+}
+
+.user-info p {
+    margin: 8px 0;
+    font-size: 1.1rem;
+    color: var(--cor-texto);
+}
+
+.user-info p strong {
+    color: var(--cor-primaria);
+    margin-right: 8px;
+}
+
+.user-info .btn {
+    margin-top: 15px;
+}
+
+#btn-nova-postagem {
+    margin-bottom: 30px;
+    font-size: 1rem;
+    padding: 12px 25px;
+    background-color: var(--cor-primaria);
+}
+
+#btn-nova-postagem:hover {
+    background-color: #124370;
+}
+
+.post-item {
+    background: #fff;
+    border: 1px solid var(--cor-borda);
+    padding: 25px;
+    margin-bottom: 20px;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.post-item:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--sombra-hover);
+}
+
+.post-item h3 {
+    margin-top: 0;
+    margin-bottom: 5px;
+}
+
+.post-item small {
+    color: var(--cor-texto-claro);
+    font-size: 0.85rem;
+    display: block;
+    margin-bottom: 15px;
+}
+
+.post-item .post-content {
+    color: #555;
+    line-height: 1.7;
+}
+
+/* MODAL DE CRIAÇÃO DE POST */
+#modal { 
+    display: none; 
+    position: fixed; 
+    z-index: 1001; 
+    left: 0; 
+    top: 0; 
+    width: 100%; 
+    height: 100%; 
+    background: rgba(0,0,0,0.6); 
+    backdrop-filter: blur(4px); 
+}
+
+#modal-content { 
+    background: var(--cor-fundo-main); 
+    margin: 5% auto; 
+    padding: 30px; 
+    border-radius: 12px; 
+    width: 90%; 
+    max-width: 800px; 
+    box-shadow: 0 8px 30px rgba(0,0,0,0.3); 
+    display: flex; 
+    flex-direction: column; 
+    gap: 15px; 
+}
+
+#modal-close { 
+    align-self: flex-end; 
+    cursor: pointer; 
+    font-size: 28px; 
+    line-height: 1; 
+    font-weight: bold; 
+    color: var(--cor-texto-claro); 
+}
+
+#modal-close:hover { 
+    color: var(--cor-texto); 
+}
+
+#modal-content h2 { 
+    margin-top: 0; 
+}
+
+#toolbar { 
+    border-bottom: 1px solid var(--cor-borda); 
+    padding-bottom: 15px; 
+    display: flex; 
+    gap: 8px; 
+}
+
+#toolbar button { 
+    background-color: var(--cor-fundo-claro); 
+    color: var(--cor-texto); 
+    border: 1px solid var(--cor-borda); 
+    padding: 8px 12px; 
+}
+
+#editor { 
+    min-height: 250px; 
+    border-radius: 8px; 
+    border: 1px solid var(--cor-borda); 
+    padding: 15px; 
+    background: #fff; 
+    overflow-y: auto; 
+    line-height: 1.7; 
+}
+
+#editor:focus { 
+    outline: none; 
+    border-color: var(--cor-secundaria); 
+    box-shadow: 0 0 0 3px rgba(58, 134, 200, 0.25); 
+}
+
+#titulo { 
+    font-size: 2rem; 
+    border: none; 
+    padding: 10px 0; 
+    font-family: var(--fonte-titulo); 
+    width: 100%; 
+    border-bottom: 2px solid var(--cor-borda); 
+    transition: border-color 0.3s; 
+}
+
+#titulo:focus { 
+    outline: none; 
+    border-bottom-color: var(--cor-primaria); 
+}
+
+#btn-publicar { 
+    align-self: flex-end; 
+    background-color: var(--cor-primaria); 
+    padding: 12px 25px; 
+}
+
+#btn-publicar:hover { 
+    background-color: #124370; 
+}
+
+
+/* ==========================================================================
+   ESTILOS ESPECÍFICOS PARA A PÁGINA PRINCIPAL
+   ========================================================================== */
+.section-title { 
+    text-align: center; 
+    font-size: 2.5rem; 
+    margin-top: 0; 
+    margin-bottom: 50px; 
+    color: var(--cor-primaria); 
+}
+
+/* Remove o estilo de "caixa" do <main> apenas na homepage */
+body:has(.hero-section) main { 
+    padding: 0; 
+    background: none; 
+    box-shadow: none; 
+    max-width: none; 
+    width: 100%; 
+    margin: 0; 
+    border-radius: 0; 
+}
+
+body:has(.hero-section) main > section { 
+    padding: 80px 20px; 
+} /* Espaçamento padrão para seções da homepage */
+
+.hero-section { 
+    position: relative; 
+    height: 70vh; 
+    background-image: url('../Imagens/IcexImg1.jpg'); 
+    background-size: cover; 
+    background-position: center; 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    text-align: center; 
+    color: white; 
+}
+
+.hero-section::before { 
+    content: ''; 
+    position: absolute; 
+    top: 0; 
+    left: 0; 
+    width: 100%; 
+    height: 100%; 
+    background: rgba(10, 38, 66, 0.6); 
+}
+
+.hero-content { 
+    position: relative; 
+    padding: 20px; 
+}
+
+.hero-content h1 { 
+    font-family: var(--fonte-titulo); 
+    font-size: clamp(2.5rem, 5vw, 3.8rem); 
+    color: white; 
+    margin: 0; 
+    text-shadow: 2px 2px 8px rgba(0,0,0,0.5); 
+}
+
+.hero-content .subtitle { 
+    font-size: clamp(1rem, 2vw, 1.2rem); 
+    margin-top: 10px; 
+    opacity: 0.9; 
+}
+
+.cta-section { 
+    background-color: var(--cor-primaria); 
+    color: white; 
+    padding: 60px 20px; 
+    text-align: center; 
+}
+
+.cta-content h2 { 
+    color: white; 
+    font-size: 2rem; 
+    margin-top: 0; 
+    margin-bottom: 10px; 
+}
+
+.cta-content p { 
+    max-width: 600px; 
+    margin: 0 auto 25px auto; 
+    opacity: 0.9; 
+}
+
+.cta-content .btn { 
+    background-color: white; 
+    color: var(--cor-primaria); 
+    font-weight: 700; 
+    padding: 12px 25px; 
+}
+
+.about-section { 
+    background-color: var(--cor-fundo-main); 
+}
+
+.about-content { 
+    max-width: 800px; 
+    margin: 0 auto; 
+    text-align: center; 
+    font-size: 1.1rem; 
+}
+
+.team-section { 
+    background-color: var(--cor-fundo-main); 
+}
+
+.team-container { 
+    display: grid; 
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); 
+    gap: 30px; 
+}
+
+.team-member { 
+    display: flex; 
+    align-items: center; 
+    gap: 20px; 
+    background-color: var(--cor-fundo-main); 
+    padding: 20px; 
+    border-radius: 12px; 
+    border: 1px solid var(--cor-borda); 
+}
+
+.team-member img { 
+    width: 100px; 
+    height: 100px; 
+    border-radius: 50%; 
+    object-fit: cover; 
+    border: 3px solid var(--cor-secundaria); 
+}
+
+.member-info h3 { 
+    margin: 0 0 5px 0; 
+    font-size: 1.25rem; 
+}
+
+.member-info span { 
+    color: var(--cor-texto-claro); 
+    font-weight: 700; 
+    display: block; 
+    margin-bottom: 10px; 
+}
+
+.member-info p { 
+    margin: 0; 
+    font-size: 0.9rem; 
+}
+
+/* --------------------------------------------------------------------------
+   RESPONSIVIDADE
+   -------------------------------------------------------------------------- */
+@media (max-width: 900px) {
+    main:not(body:has(.hero-section) main) { 
+        padding: 20px; 
+        margin: 20px 10px; 
+        width: auto; 
+    }
+
+    .box1 { 
+        flex-direction: column; 
+        gap: 15px; 
+        padding: 15px; 
+    }
+
+    .menu { 
+        justify-content: center; 
+        flex-wrap: wrap; 
+    }
+
+    footer, .box4 { 
+        flex-direction: column; 
+        text-align: center; 
+        gap: 15px; 
+    }
+
+    .hero-section { 
+        height: 60vh; 
+    }
+
+    .team-member { 
+        flex-direction: column; 
+        text-align: center; 
+    }
+}
