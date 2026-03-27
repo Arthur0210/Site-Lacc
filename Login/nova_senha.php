@@ -12,6 +12,7 @@ if (empty($token)) { // Se não existe token
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') { // Se formulário foi enviado via POST
+    global $mysqli;
     $token = $_POST['token']; // Pega token enviado via POST
     $nova = trim($_POST['nova_senha'] ?? ''); // Pega nova senha e remove espaços
     $confirma = trim($_POST['confirma_senha'] ?? ''); // Pega confirmação e remove espaços

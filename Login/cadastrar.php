@@ -1,74 +1,158 @@
 <?php
+global $mysqli;
+
+use Random\RandomException;
+
 session_start();
 
-// >>> NOVO BLOCO DE CÓDIGO <<<
-// Se o usuário já estiver logado, redireciona para a página de sucesso.
-// Isso impede que um usuário logado acesse a página de cadastro.
 if (isset($_SESSION['usuario'])) {
     header("Location: sucesso.php");
-    exit(); // Encerra o script para garantir que o redirecionamento ocorra.
+    exit();
 }
-// >>> FIM DO NOVO BLOCO <<<
 
 include("conexao.php");
+
+// =============================================
+// PROTEÇÃO CONTRA BRUTE FORCE
+// =============================================
+$max_tentativas = 5;        // Máximo de tentativas
+$janela_tempo   = 15 * 60; // 15 minutos em segundos
+
+// Inicializa os contadores na sessão se ainda não existirem
+if (!isset($_SESSION['cadastro_tentativas'])) {
+    $_SESSION['cadastro_tentativas'] = 0;
+    $_SESSION['cadastro_primeiro_erro'] = null;
+}
+
+// Verifica se o limite foi atingido
+$bloqueado = false;
+if ($_SESSION['cadastro_tentativas'] >= $max_tentativas) {
+    $tempo_passado = time() - $_SESSION['cadastro_primeiro_erro'];
+
+    if ($tempo_passado < $janela_tempo) {
+        $bloqueado = true;
+        $tempo_restante = ceil(($janela_tempo - $tempo_passado) / 60);
+    } else {
+        // Janela de tempo expirou: reseta os contadores
+        $_SESSION['cadastro_tentativas']    = 0;
+        $_SESSION['cadastro_primeiro_erro'] = null;
+    }
+}
+
+// =============================================
+// GERAÇÃO DO TOKEN CSRF
+// =============================================
+// Gera um novo token apenas se não existir um na sessão
+if (empty($_SESSION['csrf_token'])) {
+    try {
+        $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+    } catch (RandomException $e) {
+
+    }
+}
 
 $erro = [];
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $nome = trim($_POST['nome'] ?? '');
-    $sobrenome = trim($_POST['sobrenome'] ?? '');
-    $email = trim($_POST['email'] ?? '');
-    $senha = trim($_POST['senha'] ?? '');
 
-    // Validações
-    if (empty($nome) || empty($sobrenome)) {
-        $erro[] = "Preencha nome e sobrenome.";
-    }
-    
-    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-        $erro[] = "E-mail inválido.";
-    }
-    
-    if (strlen($senha) < 8) {
-        $erro[] = "A senha deve ter pelo menos 8 caracteres.";
+    // --- Valida o token CSRF antes de qualquer coisa ---
+    $token_recebido = $_POST['csrf_token'] ?? '';
+    if (!hash_equals($_SESSION['csrf_token'], $token_recebido)) {
+        // Token inválido: pode ser um ataque. Aborta imediatamente.
+        http_response_code(403);
+        die("Requisição inválida. Por favor, recarregue a página e tente novamente.");
     }
 
-    if (empty($erro)) {
-        $stmt = $mysqli->prepare("SELECT codigo FROM usuario WHERE email = ?");
-        $stmt->bind_param("s", $email);
-        $stmt->execute();
-        $stmt->store_result();
+    // Regenera o token após cada submissão válida (proteção extra)
+    try {
+        $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+    } catch (RandomException $e) {
 
-        if ($stmt->num_rows > 0) {
-            $erro[] = "E-mail já cadastrado.";
-        } else {
-            $senha_hash = password_hash($senha, PASSWORD_DEFAULT);
+    }
 
-            $stmt_insert = $mysqli->prepare("INSERT INTO usuario (nome, sobrenome, email, senha) VALUES (?, ?, ?, ?)");
-            $stmt_insert->bind_param("ssss", $nome, $sobrenome, $email, $senha_hash);
-            
-            if ($stmt_insert->execute()) {
-                // Após o cadastro, loga o usuário automaticamente
-                $novo_id = $mysqli->insert_id;
-                $_SESSION['usuario'] = $novo_id;
-                // Busca o tipo do novo usuário (será 'comum' por padrão)
-                $stmt_tipo = $mysqli->prepare("SELECT tipo_usuario FROM usuario WHERE codigo = ?");
-                $stmt_tipo->bind_param("i", $novo_id);
-                $stmt_tipo->execute();
-                $resultado_tipo = $stmt_tipo->get_result()->fetch_assoc();
-                $_SESSION['tipo_usuario'] = $resultado_tipo['tipo_usuario'];
-                
-                header("Location: sucesso.php");
-                exit();
-            } else {
-                $erro[] = "Erro ao cadastrar. Por favor, tente novamente.";
-            }
-            
-            $stmt_insert->close();
+    // --- Verifica bloqueio por brute force ---
+    if ($bloqueado) {
+        $erro[] = "Muitas tentativas. Aguarde $tempo_restante minuto(s) para tentar novamente.";
+    } else {
+        $nome      = trim($_POST['nome']      ?? '');
+        $sobrenome = trim($_POST['sobrenome'] ?? '');
+        $email     = trim($_POST['email']     ?? '');
+        $senha     = $_POST['senha']          ?? '';
+
+        // Validações
+        if (empty($nome) || empty($sobrenome)) {
+            $erro[] = "Preencha nome e sobrenome.";
         }
-        $stmt->close();
+
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            $erro[] = "E-mail inválido.";
+        }
+
+        if (strlen($senha) < 8) {
+            $erro[] = "A senha deve ter pelo menos 8 caracteres.";
+        }
+
+        if (empty($erro)) {
+            $stmt = $mysqli->prepare("SELECT codigo FROM usuario WHERE email = ?");
+            $stmt->bind_param("s", $email);
+            $stmt->execute();
+            $stmt->store_result();
+
+            if ($stmt->num_rows > 0) {
+                $erro[] = "E-mail já cadastrado.";
+            } else {
+                $senha_hash = password_hash($senha, PASSWORD_DEFAULT);
+
+                $stmt_insert = $mysqli->prepare("INSERT INTO usuario (nome, sobrenome, email, senha) VALUES (?, ?, ?, ?)");
+                $stmt_insert->bind_param("ssss", $nome, $sobrenome, $email, $senha_hash);
+
+                if ($stmt_insert->execute()) {
+                    // Cadastro bem-sucedido: reseta os contadores de tentativas
+                    $_SESSION['cadastro_tentativas']    = 0;
+                    $_SESSION['cadastro_primeiro_erro'] = null;
+
+                    $novo_id = $mysqli->insert_id;
+                    $_SESSION['usuario'] = $novo_id;
+
+                    $stmt_tipo = $mysqli->prepare("SELECT tipo_usuario FROM usuario WHERE codigo = ?");
+                    $stmt_tipo->bind_param("i", $novo_id);
+                    $stmt_tipo->execute();
+                    $resultado_tipo = $stmt_tipo->get_result()->fetch_assoc();
+                    $stmt_tipo->close();
+                    $_SESSION['tipo_usuario'] = $resultado_tipo['tipo_usuario'];
+
+                    header("Location: sucesso.php");
+                    exit();
+                } else {
+                    $erro[] = "Erro ao cadastrar. Por favor, tente novamente.";
+                }
+
+                $stmt_insert->close();
+            }
+            $stmt->close();
+        }
+
+        // Se houve qualquer erro, incrementa o contador de tentativas
+        if (!empty($erro)) {
+            $_SESSION['cadastro_tentativas']++;
+
+            // Registra o momento do primeiro erro para calcular a janela de tempo
+            if ($_SESSION['cadastro_tentativas'] === 1) {
+                $_SESSION['cadastro_primeiro_erro'] = time();
+            }
+
+            // Verifica se acabou de atingir o limite agora
+            if ($_SESSION['cadastro_tentativas'] >= $max_tentativas) {
+                $bloqueado = true;
+                $tempo_restante = ceil($janela_tempo / 60);
+                $erro = ["Muitas tentativas. Aguarde {$tempo_restante} minuto(s) para tentar novamente."];
+            }
+        }
     }
 }
+
+// Calcula tentativas restantes para exibir ao usuário
+$tentativas_restantes = max(0, $max_tentativas - $_SESSION['cadastro_tentativas']);
 ?>
 <!DOCTYPE html>
 <html lang="pt-BR">
@@ -78,41 +162,54 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <link rel="stylesheet" href="../Paginas/style.css">
 </head>
 <body>
-    <div class="container">
+<div class="container">
 
-        <?php if (!empty($erro)): ?>
-            <div class="alert error">
-                <?php foreach ($erro as $msg): ?>
-                    <p><?= htmlspecialchars($msg) ?></p>
-                <?php endforeach; ?>
-            </div>
-        <?php endif; ?>
+    <?php if (!empty($erro)): ?>
+        <div class="alert error">
+            <?php foreach ($erro as $msg): ?>
+                <p><?= htmlspecialchars($msg) ?></p>
+            <?php endforeach; ?>
+        </div>
+    <?php endif; ?>
 
-        <form method="POST" action="">
-            <div class="form-group">
-                <label for="nome">Nome:</label>
-                <input type="text" id="nome" name="nome" placeholder="Seu nome" required>
-            </div>
-            
-            <div class="form-group">
-                <label for="sobrenome">Sobrenome:</label>
-                <input type="text" id="sobrenome" name="sobrenome" placeholder="Seu sobrenome" required>
-            </div>
-            
-            <div class="form-group">
-                <label for="email">E-mail:</label>
-                <input type="email" id="email" name="email" placeholder="Seu e-mail" required>
-            </div>
-            
-            <div class="form-group">
-                <label for="senha">Senha:</label>
-                <input type="password" id="senha" name="senha" placeholder="Mínimo 8 caracteres" required minlength="8">
-            </div>
-            
-            <button type="submit" class="btn">Cadastrar</button>
-            
-            <p>Já tem uma conta? <a href="login.php">Faça login</a></p>
-        </form>
-    </div>
+    <?php if (!$bloqueado && $_SESSION['cadastro_tentativas'] > 0): ?>
+        <div class="alert warning">
+            <p>Atenção: <?= $tentativas_restantes ?> tentativa(s) restante(s) antes do bloqueio temporário.</p>
+        </div>
+    <?php endif; ?>
+
+    <form method="POST" action="">
+        <!-- Token CSRF oculto -->
+        <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($_SESSION['csrf_token']) ?>">
+
+        <div class="form-group">
+            <label for="nome">Nome:</label>
+            <input type="text" id="nome" name="nome" placeholder="Seu nome"
+                   value="<?= htmlspecialchars($_POST['nome'] ?? '') ?>" required>
+        </div>
+
+        <div class="form-group">
+            <label for="sobrenome">Sobrenome:</label>
+            <input type="text" id="sobrenome" name="sobrenome" placeholder="Seu sobrenome"
+                   value="<?= htmlspecialchars($_POST['sobrenome'] ?? '') ?>" required>
+        </div>
+
+        <div class="form-group">
+            <label for="email">E-mail:</label>
+            <input type="email" id="email" name="email" placeholder="Seu e-mail"
+                   value="<?= htmlspecialchars($_POST['email'] ?? '') ?>" required>
+        </div>
+
+        <div class="form-group">
+            <label for="senha">Senha:</label>
+            <input type="password" id="senha" name="senha" placeholder="Mínimo 8 caracteres"
+                   required minlength="8">
+        </div>
+
+        <button type="submit" class="btn" <?= $bloqueado ? 'disabled' : '' ?>>Cadastrar</button>
+
+        <p>Já tem uma conta? <a href="login.php">Faça login</a></p>
+    </form>
+</div>
 </body>
 </html>
