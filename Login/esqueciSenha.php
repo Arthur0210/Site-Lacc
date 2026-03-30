@@ -1,5 +1,5 @@
 <?php
-require_once("conexao.php"); // O config.php já é chamado pelo conexao.php
+require_once("conexao.php");
 
 $erro = [];
 $sucesso = "";
@@ -25,7 +25,6 @@ if (isset($_POST['ok'])) {
             $stmt_update->bind_param("sss", $token, $expira, $email);
             
             if ($stmt_update->execute()) {
-                // Usa a constante BASE_URL do config.php para criar o link
                 $link = BASE_URL . "/Login/nova_senha.php?token=$token";
                 $assunto = "Redefinição de Senha - LACC";
 

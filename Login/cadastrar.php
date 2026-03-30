@@ -12,19 +12,14 @@ if (isset($_SESSION['usuario'])) {
 
 include("conexao.php");
 
-// =============================================
-// PROTEÇÃO CONTRA BRUTE FORCE
-// =============================================
-$max_tentativas = 5;        // Máximo de tentativas
-$janela_tempo   = 15 * 60; // 15 minutos em segundos
+$max_tentativas = 5;
+$janela_tempo   = 15 * 60;
 
-// Inicializa os contadores na sessão se ainda não existirem
 if (!isset($_SESSION['cadastro_tentativas'])) {
     $_SESSION['cadastro_tentativas'] = 0;
     $_SESSION['cadastro_primeiro_erro'] = null;
 }
 
-// Verifica se o limite foi atingido
 $bloqueado = false;
 if ($_SESSION['cadastro_tentativas'] >= $max_tentativas) {
     $tempo_passado = time() - $_SESSION['cadastro_primeiro_erro'];
@@ -33,16 +28,11 @@ if ($_SESSION['cadastro_tentativas'] >= $max_tentativas) {
         $bloqueado = true;
         $tempo_restante = ceil(($janela_tempo - $tempo_passado) / 60);
     } else {
-        // Janela de tempo expirou: reseta os contadores
         $_SESSION['cadastro_tentativas']    = 0;
         $_SESSION['cadastro_primeiro_erro'] = null;
     }
 }
 
-// =============================================
-// GERAÇÃO DO TOKEN CSRF
-// =============================================
-// Gera um novo token apenas se não existir um na sessão
 if (empty($_SESSION['csrf_token'])) {
     try {
         $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
@@ -55,22 +45,18 @@ $erro = [];
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
-    // --- Valida o token CSRF antes de qualquer coisa ---
     $token_recebido = $_POST['csrf_token'] ?? '';
     if (!hash_equals($_SESSION['csrf_token'], $token_recebido)) {
-        // Token inválido: pode ser um ataque. Aborta imediatamente.
         http_response_code(403);
         die("Requisição inválida. Por favor, recarregue a página e tente novamente.");
     }
 
-    // Regenera o token após cada submissão válida (proteção extra)
     try {
         $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
     } catch (RandomException $e) {
 
     }
 
-    // --- Verifica bloqueio por brute force ---
     if ($bloqueado) {
         $erro[] = "Muitas tentativas. Aguarde $tempo_restante minuto(s) para tentar novamente.";
     } else {
@@ -79,7 +65,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $email     = trim($_POST['email']     ?? '');
         $senha     = $_POST['senha']          ?? '';
 
-        // Validações
         if (empty($nome) || empty($sobrenome)) {
             $erro[] = "Preencha nome e sobrenome.";
         }
@@ -107,7 +92,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $stmt_insert->bind_param("ssss", $nome, $sobrenome, $email, $senha_hash);
 
                 if ($stmt_insert->execute()) {
-                    // Cadastro bem-sucedido: reseta os contadores de tentativas
                     $_SESSION['cadastro_tentativas']    = 0;
                     $_SESSION['cadastro_primeiro_erro'] = null;
 
@@ -132,16 +116,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmt->close();
         }
 
-        // Se houve qualquer erro, incrementa o contador de tentativas
         if (!empty($erro)) {
             $_SESSION['cadastro_tentativas']++;
 
-            // Registra o momento do primeiro erro para calcular a janela de tempo
             if ($_SESSION['cadastro_tentativas'] === 1) {
                 $_SESSION['cadastro_primeiro_erro'] = time();
             }
 
-            // Verifica se acabou de atingir o limite agora
             if ($_SESSION['cadastro_tentativas'] >= $max_tentativas) {
                 $bloqueado = true;
                 $tempo_restante = ceil($janela_tempo / 60);
@@ -151,7 +132,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-// Calcula tentativas restantes para exibir ao usuário
 $tentativas_restantes = max(0, $max_tentativas - $_SESSION['cadastro_tentativas']);
 ?>
 <!DOCTYPE html>
@@ -179,7 +159,6 @@ $tentativas_restantes = max(0, $max_tentativas - $_SESSION['cadastro_tentativas'
     <?php endif; ?>
 
     <form method="POST" action="">
-        <!-- Token CSRF oculto -->
         <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($_SESSION['csrf_token']) ?>">
 
         <div class="form-group">

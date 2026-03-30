@@ -2,19 +2,16 @@
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 
-// Inclui os arquivos do PHPMailer
 require_once __DIR__ . '/../PHPMailer-master/src/Exception.php';
 require_once __DIR__ . '/../PHPMailer-master/src/PHPMailer.php';
 require_once __DIR__ . '/../PHPMailer-master/src/SMTP.php';
 
-// Inclui o arquivo de configuração para usar as constantes de SMTP
 require_once __DIR__ . '/config.php';
 
 function enviarEmail($destinatario, $assunto, $linkRedefinicao) {
     $mail = new PHPMailer(true);
 
     try {
-        // Configuração do servidor SMTP usando constantes
         $mail->isSMTP();
         $mail->Host = SMTP_HOST;
         $mail->SMTPAuth = true;
@@ -24,11 +21,9 @@ function enviarEmail($destinatario, $assunto, $linkRedefinicao) {
         $mail->Port = SMTP_PORT;
         $mail->CharSet = 'UTF-8';
 
-        // Remetente e destinatário
         $mail->setFrom(SMTP_FROM_EMAIL, SMTP_FROM_NAME);
         $mail->addAddress($destinatario);
 
-        // Conteúdo do e-mail
         $mail->isHTML(true);
         $mail->Subject = $assunto;
         $mail->Body = "
@@ -50,7 +45,6 @@ function enviarEmail($destinatario, $assunto, $linkRedefinicao) {
         $mail->send();
         return true;
     } catch (Exception $e) {
-        // Em produção, logar o erro em um arquivo em vez de exibi-lo
         error_log("Erro ao enviar e-mail: " . $mail->ErrorInfo);
         return false;
     }

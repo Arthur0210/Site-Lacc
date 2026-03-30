@@ -11,6 +11,24 @@
         <ul class="menu">
             <li><a href="/LACC/Paginas/index.php">Início</a></li>
             <li><a href="/LACC/Paginas/todas_postagens.php">Postagens</a></li>
+
+            <li class="dropdown">
+                <a href="#" class="dropbtn">Pesquisas ▾</a>
+                <div class="dropdown-content">
+                    <a href="pesquisa_view.php?id=1">Pesquisa Teste</a>
+                    
+                    <?php
+                    if (session_status() === PHP_SESSION_NONE) {
+                        session_start();
+                    }
+                    
+                    if (isset($_SESSION['usuario']) && ($_SESSION['tipo_usuario'] ?? '') === 'admin') {
+                        echo '<a href="/LACC/Paginas/criar_pesquisas.php" style="font-weight: 700; background-color: var(--cor-fundo-claro); color: var(--cor-primaria); border-top: 2px solid var(--cor-borda);">+ Criar Nova Pesquisa</a>';
+                    }
+                    ?>
+                    </div>
+            </li>
+
             <li><a href="/LACC/Login/sucesso.php">Minha Conta</a></li>
         </ul>
     </div>

@@ -12,11 +12,8 @@ if (isset($_SESSION['usuario'])) {
 
 include("conexao.php");
 
-// =============================================
-// PROTEÇÃO CONTRA BRUTE FORCE
-// =============================================
 $max_tentativas = 5;
-$janela_tempo   = 15 * 60; // 15 minutos
+$janela_tempo   = 15 * 60;
 
 if (!isset($_SESSION['login_tentativas'])) {
     $_SESSION['login_tentativas']    = 0;
@@ -31,15 +28,11 @@ if ($_SESSION['login_tentativas'] >= $max_tentativas) {
         $bloqueado = true;
         $tempo_restante = ceil(($janela_tempo - $tempo_passado) / 60);
     } else {
-        // Janela expirou: reseta contadores
         $_SESSION['login_tentativas']    = 0;
         $_SESSION['login_primeiro_erro'] = null;
     }
 }
 
-// =============================================
-// GERAÇÃO DO TOKEN CSRF
-// =============================================
 if (empty($_SESSION['csrf_token_login'])) {
     try {
         $_SESSION['csrf_token_login'] = bin2hex(random_bytes(32));
@@ -48,33 +41,28 @@ if (empty($_SESSION['csrf_token_login'])) {
     }
 }
 
-// Nota: usamos um token separado do cadastro ('csrf_token_login')
-// para evitar conflito se o usuário abrir as duas páginas ao mesmo tempo.
 
 $erro = [];
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
-    // --- Valida token CSRF ---
     $token_recebido = $_POST['csrf_token'] ?? '';
     if (!hash_equals($_SESSION['csrf_token_login'], $token_recebido)) {
         http_response_code(403);
         die("Requisição inválida. Por favor, recarregue a página e tente novamente.");
     }
 
-    // Regenera o token após cada submissão válida
     try {
         $_SESSION['csrf_token_login'] = bin2hex(random_bytes(32));
     } catch (RandomException $e) {
 
     }
 
-    // --- Verifica bloqueio ---
     if ($bloqueado) {
         $erro[] = "Muitas tentativas. Aguarde $tempo_restante minuto(s) para tentar novamente.";
     } else {
         $email = trim($_POST['email'] ?? '');
-        $senha = $_POST['senha'] ?? ''; // Sem trim na senha!
+        $senha = $_POST['senha'] ?? '';
 
         if (empty($email) || empty($senha)) {
             $erro[] = "Preencha e-mail e senha.";
@@ -90,7 +78,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $usuario = $resultado->fetch_assoc();
 
                 if (password_verify($senha, $usuario['senha'])) {
-                    // Login bem-sucedido: reseta contadores
                     $_SESSION['login_tentativas']    = 0;
                     $_SESSION['login_primeiro_erro'] = null;
 
@@ -109,7 +96,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmt->close();
         }
 
-        // Incrementa tentativas se houve erro
         if (!empty($erro)) {
             $_SESSION['login_tentativas']++;
 
@@ -153,7 +139,6 @@ $tentativas_restantes = max(0, $max_tentativas - $_SESSION['login_tentativas']);
     <?php endif; ?>
 
     <form method="POST" action="">
-        <!-- Token CSRF oculto -->
         <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($_SESSION['csrf_token_login']) ?>">
 
         <div class="form-group">

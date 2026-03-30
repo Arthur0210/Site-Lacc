@@ -1,10 +1,6 @@
 <?php
 require_once "../Login/conexao.php";
 
-// =============================================
-// VALIDAÇÃO DO ID
-// =============================================
-// Cast para inteiro: protege contra IDs inválidos, negativos ou vazios
 $id = isset($_GET['id']) ? (int) $_GET['id'] : 0;
 
 if (!$id) {
@@ -13,11 +9,6 @@ if (!$id) {
     exit();
 }
 
-// =============================================
-// BUSCA A POSTAGEM PRIMEIRO
-// =============================================
-// A busca ocorre ANTES do incremento de visualizações para evitar
-// incrementar o contador de posts inexistentes
 $stmt = $mysqli->prepare("
     SELECT p.titulo, p.conteudo, p.data, p.visualizacoes, 
            u.nome, u.sobrenome 
@@ -39,9 +30,6 @@ if ($result->num_rows === 0) {
 $post = $result->fetch_assoc();
 $stmt->close();
 
-// =============================================
-// INCREMENTA VISUALIZAÇÕES (só após confirmar que o post existe)
-// =============================================
 $updateViews = $mysqli->prepare("
     UPDATE postagens 
     SET visualizacoes = visualizacoes + 1 
@@ -51,16 +39,8 @@ $updateViews->bind_param("i", $id);
 $updateViews->execute();
 $updateViews->close();
 
-// Soma +1 para refletir a visita atual sem precisar rebuscar do banco
 $visualizacoes = ($post['visualizacoes'] ?? 0) + 1;
 
-// =============================================
-// SANITIZAÇÃO DO CONTEÚDO
-// =============================================
-// <img> removida para evitar hotlinking e abusos.
-// <div> e <p> removidos pois aceitam atributos como onclick/style.
-// Para conteúdo gerado por usuários, considere o HTML Purifier:
-// http://htmlpurifier.org/
 $tags_permitidas = '<b><i><u><br>';
 $conteudo_seguro = nl2br(strip_tags($post['conteudo'], $tags_permitidas));
 ?>
@@ -81,7 +61,7 @@ $conteudo_seguro = nl2br(strip_tags($post['conteudo'], $tags_permitidas));
             <?= htmlspecialchars($post['nome']) ?>
             <?= htmlspecialchars($post['sobrenome']) ?>
         </p>
-        <!-- Data formatada corretamente para pt-BR -->
+
         <p>
             <em>Publicado em <?= date("d/m/Y", strtotime($post['data'])) ?></em>
             — <?= $visualizacoes ?> visualizações
