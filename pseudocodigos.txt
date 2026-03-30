@@ -30,3 +30,81 @@ INÍCIO
         ATRIBUIR TEMPO_ATUAL() A NOVA_LINHA.ultimo_envio
     FIM SE
 FIM
+
+
+
+// =================================================================================
+// INÍCIO DO FLUXO DE RECUPERAÇÃO DE CREDENCIAIS (TROCA DE SENHA)
+// =================================================================================
+
+// FUNCAO_ISSET: Checa se a variável do formulário existe na memória.
+// Na prática, verifica se o usuário realmente clicou no botão de "submit" (name="ok") antes de rodar o script.
+SE (FUNCAO_ISSET($_POST['ok']) FOR VERDADEIRO) ENTÃO
+
+    // FUNCAO_FILTER_VAR (com FILTER_VALIDATE_EMAIL): Pega a entrada crua e passa por um filtro rigoroso do motor do PHP.
+    // Ele verifica se a string segue o padrão RFC 822 (usuario@dominio.com), rejeitando injeções de código e "os caraio".
+    // FUNCAO_TRIM: Remove espaços em branco acidentais no início e no fim da string digitada.
+    ATRIBUIR $emailFornecido = FUNCAO_TRIM( FUNCAO_FILTER_VAR($_POST['email'], FILTRO_VALIDA_EMAIL) )
+
+    // Se o filtro acima não encontrar um e-mail válido, ele retorna um valor booleano FALSO.
+    SE ($emailFornecido FOR IGUAL A FALSO) ENTÃO
+        // FUNCAO_ARRAY_PUSH: Empurra a mensagem de falha para dentro do vetor (array) que guarda todos os erros da tela.
+        ADICIONAR "E-mail inválido." AO VETOR_DE_ERROS($erro)
+
+    SENÃO
+        // FUNCAO_RANDOM_BYTES(32): Exige que o sistema operacional gere 32 bytes de entropia pura (aleatoriedade criptograficamente segura).
+        // FUNCAO_BIN2HEX: Pega esses bytes binários ilegíveis e os traduz para uma string de 64 caracteres hexadecimais (0-9, a-f).
+        ATRIBUIR $tokenCriptografico = FUNCAO_BIN2HEX( FUNCAO_RANDOM_BYTES(32) )
+
+        // FUNCAO_STRTOTIME("+1 hour"): Pega o momento exato atual do relógio do servidor e soma 3600 segundos (1 hora).
+        // FUNCAO_DATE("Y-m-d H:i:s"): Formata esse tempo futuro no padrão exato que o banco de dados SQL entende.
+        ATRIBUIR $horizonteExpiracao = FUNCAO_DATE( PADRAO_SQL_DATETIME, FUNCAO_STRTOTIME("+1 hour") )
+
+        // BLOCO_TENTAR (Try/Catch): Inicia um bloco de execução isolado. Se o banco de dados "gritar" um erro (lançar uma exceção),
+        // o código não "quebra" a tela do usuário; ele pula direto para o bloco CAPTURAR lá embaixo.
+        BLOCO_TENTAR
+
+            // FUNCAO_PREPARE_E_EXECUTE: Abre um túnel seguro (Prepared Statement) com o banco de dados e dispara a rotina (Stored Procedure).
+            // Passar os dados por aqui evita que um atacante feche a query com aspas e insira comandos maliciosos (SQL Injection).
+            EXECUTAR_QUERY_PREPARADA("CALL SolicitarRedefinicaoSenha(?, ?, ?)", $emailFornecido, $tokenCriptografico, $horizonteExpiracao)
+
+            // FUNCAO_AFFECTED_ROWS: Pergunta ao banco de dados: "Quantas linhas você alterou na tabela usuário com esse comando?"
+            ATRIBUIR $quantidadeLinhasAfetadas = FUNCAO_OBTER_LINHAS_AFETADAS_PELO_MYSQL()
+
+            // Se o e-mail não existir na tabela, a Procedure não atualiza nada e retorna 0 linhas afetadas.
+            SE ($quantidadeLinhasAfetadas FOR IGUAL A 0) ENTÃO
+                ADICIONAR "O endereço fornecido não consta nos registros do sistema." AO VETOR_DE_ERROS($erro)
+
+            SENÃO
+                // O banco de dados foi atualizado. Agora montamos o link completo injetando a variável do token na URL.
+                ATRIBUIR $linkAcesso = CONCATENAR_TEXTO(BASE_URL, "/Login/nova_senha.php?token=", $tokenCriptografico)
+
+                // FUNCAO_ENVIAR_EMAIL (PHPMailer): Abre a conexão SMTP com o servidor de e-mail, monta os cabeçalhos (headers),
+                // insere o HTML e dispara a mensagem para o endereço do usuário. Retorna VERDADEIRO se o e-mail sair do servidor.
+                ATRIBUIR $resultadoDisparoSMTP = FUNCAO_ENVIAR_EMAIL($emailFornecido, $linkAcesso)
+
+                SE ($resultadoDisparoSMTP FOR VERDADEIRO) ENTÃO
+                    ATRIBUIR $mensagemSucesso = "As instruções foram encaminhadas para sua caixa de entrada."
+                SENÃO
+                    ADICIONAR "Falha na comunicação com o servidor SMTP. O e-mail não pôde ser enviado." AO VETOR_DE_ERROS($erro)
+                FIM SE
+
+            FIM SE
+
+        // CAPTURAR_EXCECAO (Catch): Se a Procedure do banco rodou o comando SIGNAL SQLSTATE '45000' (aquele erro de limite de 1 hora),
+        // o PHP intercepta essa falha aqui e a guarda na variável $AnomaliaPersistencia.
+        CAPTURAR EXCECAO_DO_TIPO_MYSQLI COMO $AnomaliaPersistencia
+
+            // Propriedade ESTADO_SQL: Verifica o código de erro numérico devolvido pelo banco de dados.
+            SE ($AnomaliaPersistencia->ESTADO_SQL FOR IGUAL A '45000') ENTÃO
+                // Propriedade MENSAGEM_TEXTO: Pega a mensagem exata que escrevemos dentro da Procedure (ex: "Aguarde uma hora...")
+                ADICIONAR $AnomaliaPersistencia->MENSAGEM_TEXTO AO VETOR_DE_ERROS($erro)
+            SENÃO
+                // Se for outro código de erro (ex: banco offline, tabela não encontrada), exibe um erro genérico para não vazar dados do banco.
+                ADICIONAR "Ocorreu uma falha sistêmica durante a comunicação com o banco de dados." AO VETOR_DE_ERROS($erro)
+            FIM SE
+
+        FIM BLOCO_TENTAR
+
+    FIM SE
+FIM SE
