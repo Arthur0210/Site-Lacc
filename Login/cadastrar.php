@@ -12,6 +12,9 @@ if (isset($_SESSION['usuario'])) {
 
 include("conexao.php");
 
+// =============================================
+// PROTEÇÃO CONTRA BRUTE FORCE
+// =============================================
 $max_tentativas = 5;
 $janela_tempo   = 15 * 60;
 
@@ -33,12 +36,13 @@ if ($_SESSION['cadastro_tentativas'] >= $max_tentativas) {
     }
 }
 
+// =============================================
+// GERAÇÃO DO TOKEN CSRF
+// =============================================
 if (empty($_SESSION['csrf_token'])) {
     try {
         $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
-    } catch (RandomException $e) {
-
-    }
+    } catch (RandomException $e) {}
 }
 
 $erro = [];
@@ -53,9 +57,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     try {
         $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
-    } catch (RandomException $e) {
-
-    }
+    } catch (RandomException $e) {}
 
     if ($bloqueado) {
         $erro[] = "Muitas tentativas. Aguarde $tempo_restante minuto(s) para tentar novamente.";
@@ -161,26 +163,72 @@ $tentativas_restantes = max(0, $max_tentativas - $_SESSION['cadastro_tentativas'
     <form method="POST" action="">
         <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($_SESSION['csrf_token']) ?>">
 
+        <!-- NOME -->
         <div class="form-group">
-            <label for="nome">Nome:</label>
+            <label for="nome" class="label-info">
+                Nome:
+                <button type="button" class="btn-info" aria-label="Informações sobre o campo Nome" onclick="alternarTooltip(this)">
+                    i
+                    <span class="tooltip">
+                        Digite apenas o seu <strong>primeiro nome</strong>.<br>
+                        Ex: <em>João</em>, <em>Maria</em>.<br>
+                        Não use números ou caracteres especiais.
+                    </span>
+                </button>
+            </label>
             <input type="text" id="nome" name="nome" placeholder="Seu nome"
                    value="<?= htmlspecialchars($_POST['nome'] ?? '') ?>" required>
         </div>
 
+        <!-- SOBRENOME -->
         <div class="form-group">
-            <label for="sobrenome">Sobrenome:</label>
+            <label for="sobrenome" class="label-info">
+                Sobrenome:
+                <button type="button" class="btn-info" aria-label="Informações sobre o campo Sobrenome" onclick="alternarTooltip(this)">
+                    i
+                    <span class="tooltip">
+                        Digite o seu <strong>sobrenome completo</strong>.<br>
+                        Ex: <em>Silva</em>, <em>Oliveira Santos</em>.<br>
+                        Não use números ou caracteres especiais.
+                    </span>
+                </button>
+            </label>
             <input type="text" id="sobrenome" name="sobrenome" placeholder="Seu sobrenome"
                    value="<?= htmlspecialchars($_POST['sobrenome'] ?? '') ?>" required>
         </div>
 
+        <!-- E-MAIL -->
         <div class="form-group">
-            <label for="email">E-mail:</label>
+            <label for="email" class="label-info">
+                E-mail:
+                <button type="button" class="btn-info" aria-label="Informações sobre o campo E-mail" onclick="alternarTooltip(this)">
+                    i
+                    <span class="tooltip">
+                        Use um endereço de e-mail <strong>válido e que você acessa</strong>.<br>
+                        Ex: <em>joao@gmail.com</em><br>
+                        Ele será usado para login e recuperação de senha.
+                    </span>
+                </button>
+            </label>
             <input type="email" id="email" name="email" placeholder="Seu e-mail"
                    value="<?= htmlspecialchars($_POST['email'] ?? '') ?>" required>
         </div>
 
+        <!-- SENHA -->
         <div class="form-group">
-            <label for="senha">Senha:</label>
+            <label for="senha" class="label-info">
+                Senha:
+                <button type="button" class="btn-info" aria-label="Informações sobre o campo Senha" onclick="alternarTooltip(this)">
+                    i
+                    <span class="tooltip">
+                        A senha deve ter <strong>no mínimo 8 caracteres</strong>.<br>
+                        Para ser mais segura, use:<br>
+                        • Letras maiúsculas e minúsculas<br>
+                        • Números<br>
+                        • Símbolos como <em>@, #, !</em>
+                    </span>
+                </button>
+            </label>
             <input type="password" id="senha" name="senha" placeholder="Mínimo 8 caracteres"
                    required minlength="8">
         </div>
@@ -190,5 +238,6 @@ $tentativas_restantes = max(0, $max_tentativas - $_SESSION['cadastro_tentativas'
         <p>Já tem uma conta? <a href="login.php">Faça login</a></p>
     </form>
 </div>
+<script src="../js/tooltips.js"></script>
 </body>
 </html>

@@ -1,3 +1,10 @@
+/* ==========================================================================
+   DESIGN LACC - Versão Final Unificada
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   VARIÁVEIS DE DESIGN E ESTILOS GLOBAIS
+   -------------------------------------------------------------------------- */
 :root {
     --cor-primaria: #1a5f9e; 
     --cor-secundaria: #3a86c8;
@@ -54,168 +61,15 @@ img {
     display: block; 
 }
 
+/* --------------------------------------------------------------------------
+   HEADER E FOOTER
+   -------------------------------------------------------------------------- */
 header { 
     background-color: var(--cor-fundo-main); 
     box-shadow: 0 2px 5px rgba(0,0,0,0.05); 
     position: sticky; 
     top: 0; 
     z-index: 1000; 
-}
-
-.lacc-footer {
-    background-color: #030a1c;
-    color: #cad1d9;
-    padding: 60px 0 0 0;
-    margin-top: 60px;
-    font-family: var(--fonte-corpo);
-    font-size: 0.9rem;
-    border-top: 1px solid rgba(255,255,255,0.1);
-}
-
-.footer-container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 0 20px;
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 40px;
-}
-
-.footer-col {
-    display: flex;
-    flex-direction: column;
-}
-
-.footer-title {
-    color: #fff;
-    font-weight: 700;
-    font-size: 1rem;
-    margin-top: 0;
-    margin-bottom: 20px;
-    font-family: var(--fonte-titulo);
-}
-
-.lacc-logo-text {
-    font-size: 1.4rem;
-    letter-spacing: 1px;
-}
-
-.footer-text, .footer-location {
-    line-height: 1.6;
-    margin-top: 0;
-    margin-bottom: 15px;
-    color: #aeb6c1;
-}
-
-.footer-location {
-    font-style: italic;
-    font-size: 0.85rem;
-}
-
-.footer-links {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-}
-
-.footer-links li {
-    margin-bottom: 12px;
-}
-
-.footer-links a {
-    color: #cad1d9;
-    text-decoration: none;
-    transition: color 0.3s ease;
-}
-
-.footer-links a:hover {
-    color: #fff;
-}
-
-.footer-social-icons {
-    display: flex;
-    gap: 15px;
-    margin-top: 5px;
-}
-
-.social-icon-circle {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 38px;
-    height: 38px;
-    background-color: rgba(255,255,255,0.08);
-    border-radius: 50%;
-    color: #cad1d9;
-    text-decoration: none;
-    transition: background-color 0.3s ease, color 0.3s ease, transform 0.2s ease;
-}
-
-.social-icon-circle:hover {
-    background-color: rgba(255,255,255,0.15);
-    color: #fff;
-    transform: translateY(-2px);
-}
-
-.icon-svg {
-    width: 18px;
-    height: 18px;
-}
-
-.footer-bottom {
-    background-color: rgba(0,0,0,0.2);
-    padding: 20px 0;
-    margin-top: 50px;
-    border-top: 1px solid rgba(255,255,255,0.05);
-}
-
-.footer-bottom .footer-container {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    grid-template-columns: none;
-    font-size: 0.8rem;
-    gap: 10px;
-}
-
-.copyright-text {
-    margin: 0;
-    color: rgba(255,255,255,0.5);
-}
-
-.footer-bottom-links {
-    display: flex;
-    gap: 20px;
-}
-
-.bottom-text {
-    color: rgba(255,255,255,0.5);
-}
-
-
-@media (max-width: 850px) {
-    .footer-container {
-        grid-template-columns: repeat(2, 1fr);
-    }
-}
-
-@media (max-width: 550px) {
-    .footer-container {
-        grid-template-columns: 1fr;
-        text-align: center;
-    }
-    
-    .footer-col {
-        align-items: center;
-    }
-    
-    .footer-bottom .footer-container {
-        flex-direction: column;
-    }
-    
-    .footer-bottom-links {
-        margin-top: 10px;
-    }
 }
 
 .box1 { 
@@ -278,7 +132,7 @@ header {
     width: 100%; 
 }
 
-.box4 { 
+footer, .box4 { 
     background-color: #343a40; 
     color: #f8f9fa; 
     padding: 20px 40px; 
@@ -294,6 +148,9 @@ header {
     filter: brightness(0) invert(1); 
 }
 
+/* --------------------------------------------------------------------------
+   LAYOUTS E BOTÕES GERAIS
+   -------------------------------------------------------------------------- */
 main { 
     flex: 1; 
     width: 90%; 
@@ -328,6 +185,9 @@ main {
     box-shadow: var(--sombra-hover); 
 }
 
+/* --------------------------------------------------------------------------
+   ESTILOS PARA PÁGINAS INTERNAS (POSTS, LOGIN, FORMULÁRIOS)
+   -------------------------------------------------------------------------- */
 .post { 
     background: #fff; 
     border: 1px solid var(--cor-borda); 
@@ -373,6 +233,10 @@ form input[type=text], form input[type=email], form input[type=password] {
     border: 1px solid var(--cor-borda); 
 }
 
+/* ==========================================================================
+   NOVO DESIGN: PÁGINA MINHA CONTA (/sucesso.php)
+   ========================================================================== */
+
 .user-info {
     padding: 30px;
     background-color: var(--cor-fundo-claro);
@@ -412,164 +276,14 @@ form input[type=text], form input[type=email], form input[type=password] {
     background-color: #124370;
 }
 
-.timeline-container {
-    display: flex;
-    gap: 30px;
-    align-items: flex-start;
-}
-
-.timeline-sidebar {
-    flex: 0 0 280px;
-    background: #fff;
-    padding: 25px;
-    border-radius: 12px;
-    border: 1px solid var(--cor-borda);
-    box-shadow: var(--sombra-padrao);
-    position: sticky;
-    top: 90px; 
-}
-
-.timeline-sidebar form {
-    box-shadow: none;
-    padding: 0;
-    background: transparent;
-    margin: 0;
-}
-
-.timeline-sidebar h3 {
-    margin-top: 0;
-    margin-bottom: 15px;
-    font-size: 1.2rem;
-}
-
-.timeline-sidebar input[type="text"] {
-    width: 100%;
-    padding: 10px 15px;
-    border: 1px solid var(--cor-borda);
-    border-radius: 8px;
-    margin-bottom: 20px;
-    font-family: var(--fonte-corpo);
-}
-
-.timeline-content {
-    flex: 1; 
-}
-
-.timeline-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 25px;
-}
-
 .post-item {
     background: #fff;
     border: 1px solid var(--cor-borda);
+    padding: 25px;
+    margin-bottom: 20px;
     border-radius: 12px;
-    overflow: hidden;
     box-shadow: 0 2px 8px rgba(0,0,0,0.06);
     transition: transform 0.3s ease, box-shadow 0.3s ease;
-    display: flex;
-    flex-direction: column;
-    padding: 0;
-    margin-bottom: 0; 
-}
-
-.post-item:hover {
-    transform: translateY(-5px);
-    box-shadow: var(--sombra-hover);
-}
-
-.post-item .post-img {
-    width: 100%;
-    height: 180px;
-    object-fit: cover;
-    background-color: var(--cor-fundo-claro);
-    border-bottom: 1px solid var(--cor-borda);
-}
-
-.post-item-body {
-    padding: 20px;
-    display: flex;
-    flex-direction: column;
-    flex: 1;
-}
-
-.post-item-body h3 {
-    margin-top: 0;
-    margin-bottom: 10px;
-    font-size: 1.3rem;
-    line-height: 1.3;
-}
-
-.post-item-body small {
-    color: var(--cor-texto-claro);
-    font-size: 0.85rem;
-    margin-bottom: 15px;
-    display: block;
-}
-
-.post-item-body p {
-    color: #555;
-    font-size: 0.95rem;
-    line-height: 1.6;
-    margin-bottom: 20px;
-    display: -webkit-box;
-    -webkit-line-clamp: 3;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-}
-
-.post-item-body .btn-ler-mais {
-    margin-top: auto;
-    align-self: flex-start;
-    padding: 8px 16px;
-    font-size: 0.9rem;
-}
-
-
-@media (max-width: 850px) {
-    .timeline-container {
-        flex-direction: column;
-    }
-    .timeline-sidebar {
-        width: 100%;
-        position: static;
-    }
-}
-
-.label-filtro {
-    display: block;
-    font-family: var(--fonte-corpo);
-    font-size: 0.95rem;
-    font-weight: 600;
-    margin-bottom: 8px;
-    color: #000;
-    margin-top: 20px;
-}
-
-.select-filtro {
-    width: 100%;
-    padding: 10px 15px;
-    background-color: #f4f5f7;
-    border: 1px solid transparent;
-    border-radius: 4px;
-    font-family: var(--fonte-corpo);
-    font-size: 0.9rem;
-    color: #333;
-    appearance: none; 
-    -webkit-appearance: none;
-    background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
-    background-repeat: no-repeat;
-    background-position: right 15px center;
-    background-size: 16px;
-    
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-}
-
-.select-filtro:focus {
-    outline: none;
-    background-color: #eaecef;
 }
 
 .post-item:hover {
@@ -594,6 +308,7 @@ form input[type=text], form input[type=email], form input[type=password] {
     line-height: 1.7;
 }
 
+/* MODAL DE CRIAÇÃO DE POST */
 #modal { 
     display: none; 
     position: fixed; 
@@ -691,6 +406,10 @@ form input[type=text], form input[type=email], form input[type=password] {
     background-color: #124370; 
 }
 
+
+/* ==========================================================================
+   ESTILOS ESPECÍFICOS PARA A PÁGINA PRINCIPAL
+   ========================================================================== */
 .section-title { 
     text-align: center; 
     font-size: 2.5rem; 
@@ -699,6 +418,7 @@ form input[type=text], form input[type=email], form input[type=password] {
     color: var(--cor-primaria); 
 }
 
+/* Remove o estilo de "caixa" do <main> apenas na homepage */
 body:has(.hero-section) main { 
     padding: 0; 
     background: none; 
@@ -711,7 +431,7 @@ body:has(.hero-section) main {
 
 body:has(.hero-section) main > section { 
     padding: 80px 20px; 
-}
+} /* Espaçamento padrão para seções da homepage */
 
 .hero-section { 
     position: relative; 
@@ -838,6 +558,9 @@ body:has(.hero-section) main > section {
     font-size: 0.9rem; 
 }
 
+/* --------------------------------------------------------------------------
+   RESPONSIVIDADE
+   -------------------------------------------------------------------------- */
 @media (max-width: 900px) {
     main:not(body:has(.hero-section) main) { 
         padding: 20px; 
@@ -856,7 +579,7 @@ body:has(.hero-section) main > section {
         flex-wrap: wrap; 
     }
 
-.box4 { 
+    footer, .box4 { 
         flex-direction: column; 
         text-align: center; 
         gap: 15px; 
@@ -872,154 +595,125 @@ body:has(.hero-section) main > section {
     }
 }
 
-.dropdown {
-    position: relative;
+
+/* --------------------------------------------------------------------------
+   VERIFICAÇÃO DE ERRO "AO VIVO"
+   -------------------------------------------------------------------------- */
+/* Mensagens de feedback ao vivo */
+#feedback-ao-vivo {
+    margin: 10px 0;
+    font-size: 0.9em;
 }
 
-.dropdown-content {
-    opacity: 0;
-    visibility: hidden;
-    transform: translateY(15px);
-    transition: all 0.3s ease;
-    
-    position: absolute; 
-    top: 100%;
-    left: 0;
-    background-color: #fff;
-    min-width: 200px;
-    box-shadow: 0 8px 16px rgba(0,0,0,0.2); 
-    z-index: 9999; 
+#feedback-ao-vivo .erro-live {
+    color: #c0392b;
+    background: #fdecea;
+    border-left: 4px solid #c0392b;
+    padding: 8px 12px;
+    border-radius: 4px;
+    margin-bottom: 5px;
 }
 
-.dropdown:hover .dropdown-content {
-    opacity: 1;
-    visibility: visible;
-    transform: translateY(0); 
+#feedback-ao-vivo .sucesso-live {
+    color: #27ae60;
+    background: #eafaf1;
+    border-left: 4px solid #27ae60;
+    padding: 8px 12px;
+    border-radius: 4px;
 }
 
-.perfil-container {
-    max-width: 1000px;
-    margin: 40px auto;
-    background: #fff;
-    padding: 40px;
-    border-radius: 12px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+/* Borda vermelha/verde nos inputs */
+input.input-invalido {
+    border-color: #c0392b !important;
+    outline-color: #c0392b !important;
+}
+
+input.input-valido {
+    border-color: #27ae60 !important;
+    outline-color: #27ae60 !important;
+}
+
+/* CADASTRAR.PHP*/
+
+/* ===== BOTÃO DE INFO ===== */
+.label-info {
     display: flex;
-    gap: 40px;
     align-items: center;
-    border: 1px solid var(--cor-borda);
+    gap: 6px; /* Espaço entre o texto da label e o botão */
 }
 
-.btn-editar {
-    display: inline-block;
-    padding: 8px 20px;
-    background-color: var(--cor-fundo-claro);
-    color: var(--cor-texto);
-    border: 1px solid var(--cor-borda);
-    border-radius: 6px;
-    text-decoration: none;
-    font-size: 0.9rem;
-    font-weight: 600;
-    transition: all 0.3s ease;
-}
-
-.btn-editar:hover {
-    background-color: var(--cor-borda);
-}
-
-.minhas-postagens-section {
-    max-width: 1000px;
-    margin: 40px auto;
-}
-
-.posts-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 20px;
-    margin-top: 20px;
-}
-
-@media (max-width: 900px) {
-    .posts-grid {
-        grid-template-columns: repeat(2, 1fr);
-    }
-}
-
-@media (max-width: 600px) {
-    .posts-grid {
-        grid-template-columns: 1fr;
-    }
-    .perfil-container {
-        flex-direction: column;
-        text-align: center;
-    }
-}
-
-.foto-redonda {
-    width: 150px;
-    height: 150px;
-    border-radius: 50%;
-    object-fit: cover;
-    border: 4px solid var(--cor-primaria);
-    margin-bottom: 15px;
-}
-
-.perfil-foto-area-edicao {
+.btn-info {
     position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background-color: #3498db;
+    color: #fff;
+    font-size: 11px;
+    font-weight: bold;
+    font-style: italic;
+    font-family: Georgia, serif;
+    border: none;
     cursor: pointer;
+    line-height: 1;
+    flex-shrink: 0;
+    transition: background-color 0.2s;
 }
 
-.perfil-foto-area-edicao .foto-redonda {
-    transition: filter 0.3s ease;
+.btn-info:hover,
+.btn-info:focus {
+    background-color: #2980b9;
+    outline: none;
 }
 
-.perfil-foto-area-edicao:hover .foto-redonda {
-    filter: brightness(60%) grayscale(50%);
-}
-
-.perfil-foto-area-edicao::after {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    font-size: 2rem;
+/* ===== TOOLTIP ===== */
+.tooltip {
+    /* Invisível por padrão */
+    visibility: hidden;
     opacity: 0;
-    transition: opacity 0.3s ease;
     pointer-events: none;
-}
 
-.perfil-foto-area-edicao:hover::after {
-    opacity: 1;
-}
+    /* Posicionamento: aparece abaixo do botão */
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 999;
 
-.icone-lapis-edicao {
-    display: inline-block;
-    margin-right: 10px;
-    font-size: 1.1rem;
-    opacity: 0.7;
-    transition: opacity 0.3s ease;
-    cursor: pointer;
-}
-
-.icone-lapis-edicao:hover {
-    opacity: 1;
-}
-
-.btn-editar-post {
-    margin-top: 15px;
-    text-align: center;
-    display: block;
-    text-decoration: none;
-    padding: 8px;
-    font-size: 0.9rem;
-    background-color: var(--cor-fundo-claro);
-    color: var(--cor-texto);
-    border: 1px solid var(--cor-borda);
+    /* Visual */
+    background-color: #2c3e50;
+    color: #ecf0f1;
+    font-size: 0.82em;
+    font-style: normal;
+    font-weight: normal;
+    font-family: sans-serif;
+    line-height: 1.5;
+    padding: 10px 13px;
     border-radius: 6px;
-    font-weight: 600;
-    transition: all 0.3s ease;
+    width: 240px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+
+    transition: opacity 0.2s ease, visibility 0.2s ease;
 }
 
-.btn-editar-post:hover {
-    background-color: var(--cor-borda);
+/* Setinha acima do tooltip */
+.tooltip::before {
+    content: '';
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 6px solid transparent;
+    border-bottom-color: #2c3e50;
+}
+
+/* Exibe o tooltip quando o botão está em foco ou hover */
+.btn-info:hover .tooltip,
+.btn-info:focus .tooltip,
+.btn-info.ativo .tooltip {
+    visibility: visible;
+    opacity: 1;
 }
