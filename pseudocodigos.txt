@@ -1,0 +1,32 @@
+PROCEDIMENTO SolicitarRedefinicaoSenha(EmailAlvo, NovoToken, DataExpiracao)
+INICIO
+    DECLARAR TempoUltimoEnvio
+    DECLARAR MinutosDecorridos
+
+    TempoUltimoEnvio = SELECT USUARIO.ULTIMO_ENVIO
+
+    SE TempoUltimoEnvio NÃO FOR NULO ENTÃO
+        ATRIBUIR a MinutosDecorridos A DIFERENÇA EM MINUTOS ENTRE TempoUltimoEnvio E TEMPO_ATUAL()
+
+        SE MinutosDecorridos < 60 ENTÃO
+            LANÇAR EXCEÇÃO "Limite de requisições excedido."
+            PARAR EXECUÇÃO
+        FIM SE
+    FIM SE
+
+    ATUALIZAR TABELA usuario
+        DEFINIR token_redefinicao = NovoToken,
+                token_expira = DataExpiracao,
+                ultimo_envio = TEMPO_ATUAL()
+        ONDE email = EmailAlvo
+FIM
+
+
+TRIGGER InicializarTempoUsuario
+ACIONAMENTO: ANTES DE INSERIR NA TABELA usuario
+PARA CADA LINHA INSERIDA
+INÍCIO
+    SE NOVA_LINHA.ultimo_envio FOR NULO ENTÃO
+        ATRIBUIR TEMPO_ATUAL() A NOVA_LINHA.ultimo_envio
+    FIM SE
+FIM
