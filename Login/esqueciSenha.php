@@ -10,7 +10,8 @@ if (isset($_POST['ok'])) {
     if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
         $erro[] = "E-mail inválido.";
     } else {
-        $stmt = $mysqli->prepare("SELECT codigo FROM usuario WHERE email = ?");
+        // 1. Buscamos o código e o horário do último envio
+        $stmt = $mysqli->prepare("SELECT codigo, ultimo_envio FROM usuario WHERE email = ?");
         $stmt->bind_param("s", $email);
         $stmt->execute();
         $res = $stmt->get_result();
@@ -18,25 +19,48 @@ if (isset($_POST['ok'])) {
         if ($res->num_rows == 0) {
             $erro[] = "Este e-mail não está cadastrado em nosso sistema.";
         } else {
-            $token = bin2hex(random_bytes(32));
-            $expira = date("Y-m-d H:i:s", strtotime("+1 hour"));
+            $usuario = $res->fetch_assoc();
 
-            $stmt_update = $mysqli->prepare("UPDATE usuario SET token_redefinicao = ?, token_expira = ? WHERE email = ?");
-            $stmt_update->bind_param("sss", $token, $expira, $email);
-            
-            if ($stmt_update->execute()) {
-                $link = BASE_URL . "/Login/nova_senha.php?token=$token";
-                $assunto = "Redefinição de Senha - LACC";
+            // --- INÍCIO DA VERIFICAÇÃO DE LIMITE ---
+            $agora = new DateTime();
+            $pode_enviar = true;
 
-                require_once 'enviar_email.php';
+            if ($usuario['ultimo_envio'] !== null) {
+                $ultimoEnvio = new DateTime($usuario['ultimo_envio']);
+                $intervalo = $ultimoEnvio->diff($agora);
 
-                if (enviarEmail($email, $assunto, $link)) {
-                    $sucesso = "Um link de redefinição foi enviado para seu e-mail.";
-                } else {
-                    $erro[] = "Erro ao enviar o e-mail. Por favor, tente novamente mais tarde.";
+                // Limite de 5 minutos entre envios para evitar spam
+                if ($intervalo->i < 5 && $intervalo->y == 0 && $intervalo->m == 0 && $intervalo->d == 0 && $intervalo->h == 0) {
+                    $aguarde = 5 - $intervalo->i;
+                    $erro[] = "Você já solicitou um link recentemente. Por favor, aguarde {$aguarde} minuto(s) para tentar novamente.";
+                    $pode_enviar = false;
                 }
-            } else {
-                $erro[] = "Ocorreu um erro no banco de dados. Tente novamente.";
+            }
+            // --- FIM DA VERIFICAÇÃO DE LIMITE ---
+
+            if ($pode_enviar) {
+                $token = bin2hex(random_bytes(32));
+                $expira = date("Y-m-d H:i:s", strtotime("+1 hour"));
+                $agora_str = $agora->format("Y-m-d H:i:s");
+
+                // Atualizamos o token, a expiração e o timestamp do último envio
+                $stmt_update = $mysqli->prepare("UPDATE usuario SET token_redefinicao = ?, token_expira = ?, ultimo_envio = ? WHERE email = ?");
+                $stmt_update->bind_param("ssss", $token, $expira, $agora_str, $email);
+
+                if ($stmt_update->execute()) {
+                    $link = BASE_URL . "/Login/nova_senha.php?token=$token";
+                    $assunto = "Redefinição de Senha - LACC";
+
+                    require_once 'enviar_email.php';
+
+                    if (enviarEmail($email, $assunto, $link)) {
+                        $sucesso = "Um link de redefinição foi enviado para seu e-mail.";
+                    } else {
+                        $erro[] = "Erro ao enviar o e-mail. Por favor, tente novamente mais tarde.";
+                    }
+                } else {
+                    $erro[] = "Ocorreu um erro no banco de dados. Tente novamente.";
+                }
             }
         }
     }
