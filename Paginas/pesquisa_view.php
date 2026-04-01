@@ -39,7 +39,19 @@ if ($id_pesquisa > 0) {
             </h2>
             
             <div class="post-content">
-                <?php echo $conteudo; ?>
+                <!-- use um dos 2 abaixo a depender de como o conteudo é armazenado no bd
+
+                 Se for texto puro — sanitize igual ao título:
+                 php echo htmlspecialchars($conteudo);
+
+                 Se for HTML legítimo (vindo de um editor rico como TinyMCE) — use a biblioteca HTMLPurifier para filtrar tags perigosas mantendo a formatação:
+                 phprequire_once 'HTMLPurifier.auto.php';
+
+                 $config = HTMLPurifier_Config::createDefault();
+                 $purifier = new HTMLPurifier($config);
+
+                 echo $purifier->purify($conteudo);
+                 --!>
             </div>
         </section>
     </main>
